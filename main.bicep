@@ -1,20 +1,19 @@
-@description('The name of the virtual network to be deployed')
-param virtualNetworkName string = 'vnet-default'
-@description('The virtual network CIDR to deploy')
-param virtualNetworkCIDR string = '10.0.0.0/24'
-@description('An array of subnet configurations containing the name and ')
-param subnetValues array = [
-  {
-    name: 'subnet-default'
-    addressPrefix: '10.0.0.0/25'
-  }
-]
+type subnet = {
+  name: string
+  addressPrefix: string
+}
 
+@description('The name of the virtual network to be deployed')
+param virtualNetworkName string
+@description('The virtual network CIDR to deploy')
+param virtualNetworkCIDR string
+@description('An array of subnet configurations containing the name and CIDR range of the subnet. Objects within this array must include a name and addressPrefix value with the type of string.')
+param subnetValues subnet[]
 @description('The location the resources will be deployed to.')
 param location string = 'uksouth'
 param tags object
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-07-01' = {
+resource virtualNetworkResource 'Microsoft.Network/virtualNetworks@2024-07-01' = {
   name: virtualNetworkName
   location: location
   properties: { 
@@ -26,17 +25,19 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-07-01' = {
   tags: tags
 }
 
-resource networkSecurityGroups 'Microsoft.Network/networkSecurityGroups@2024-07-01' = [for subnet in subnetValues: { 
+resource networkSecurityGroupResource 'Microsoft.Network/networkSecurityGroups@2024-07-01' = [for subnet in subnetValues: { 
   name: '${subnet.name}-nsg'
   location: location
+
+  tags: tags
 }]
 
-resource subnet 'Microsoft.Network/virtualNetworks/subnets@2024-07-01' = [for subnet in subnetValues: {
-  parent: virtualNetwork
+resource subnetResource 'Microsoft.Network/virtualNetworks/subnets@2024-07-01' = [for subnet in subnetValues: {
+  parent: virtualNetworkResource
   name: subnet.name
   properties: {
     addressPrefix: subnet.addressPrefix
-    networkSecurityGroup: networkSecurityGroups[subnet]
+    networkSecurityGroup: networkSecurityGroupResource[indexOf(subnetValues, subnet)]
   }
 }]
 
