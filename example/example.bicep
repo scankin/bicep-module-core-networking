@@ -1,3 +1,4 @@
+//INFO: Parameter definitions
 param service string = 'sc4'
 param region string = 'uksouth'
 param environment string = 'development'
@@ -13,6 +14,7 @@ param subnetConfiguration array = [
   }
 ]
 
+//INFO: Variable Declarations
 var regionShortcode object = {
   uksouth: 'uks'
   ukwest: 'ukw'
@@ -31,13 +33,25 @@ var tags object = {
 }
 
 var vnetName string = '${service}-vnet-${regionShortcode[region]}-${environmentShortcode[environment]}'
+// Adding naming convention to subnet names
+var subnetConfigurationClean = [for subnet in subnetConfiguration: {
+  name: '${service}-${subnet.name}-${regionShortcode[region]}-${environmentShortcode[environment]}'
+  addressPrefix: subnet.addressPrefix
+}]
 
+//INFO: Module References
 module coreNetwork '../main.bicep' = {
   params: { 
     virtualNetworkName: vnetName
+    location: region
     virtualNetworkCIDR: vnetCIDR
-    subnetValues: subnetConfiguration
+    subnetValues: subnetConfigurationClean
     tags: tags
   }
 }
+
+//INFO: Outputs
+output virtualNetworkOutput object = coreNetwork.outputs.virtualNetworkOutput
+output subnetOutputs array = coreNetwork.outputs.subnetOutputs
+output nsgOutputs array = coreNetwork.outputs.nsgOutputs
 
