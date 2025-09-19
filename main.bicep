@@ -32,13 +32,23 @@ resource networkSecurityGroupResource 'Microsoft.Network/networkSecurityGroups@2
   tags: tags
 }]
 
-resource subnetResource 'Microsoft.Network/virtualNetworks/subnets@2024-07-01' = [for subnet in subnetValues: {
+resource subnetResource 'Microsoft.Network/virtualNetworks/subnets@2024-07-01' = [for (subnet, i) in subnetValues: {
   parent: virtualNetworkResource
   name: subnet.name
   properties: {
     addressPrefix: subnet.addressPrefix
-    networkSecurityGroup: networkSecurityGroupResource[indexOf(subnetValues, subnet)]
+    networkSecurityGroup: {
+      id: networkSecurityGroupResource[i].id
+    }
   }
 }]
 
+output subnetOutputs array = [for (subnet, i) in subnetValues: {
+  subnetName: subnet.name
+  subnetProperties: subnetResource[i].properties
+}]
 
+output nsgOutputs array =  [for (subnet, i) in subnetValues: {
+  nsgName: networkSecurityGroupResource[i].name
+  nsgProperties: networkSecurityGroupResource[i].properties
+}]

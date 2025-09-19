@@ -9,7 +9,7 @@ param subnetConfiguration array = [
   }
   {
     name: 'subnet-2'
-    addressPrefix: ''
+    addressPrefix: '10.0.0.128/25'
   }
 ]
 
