@@ -34,14 +34,16 @@ var tags object = {
 
 var vnetName string = '${service}-vnet-${regionShortcode[region]}-${environmentShortcode[environment]}'
 // Adding naming convention to subnet names
-var subnetConfigurationClean = [for subnet in subnetConfiguration: {
-  name: '${service}-${subnet.name}-${regionShortcode[region]}-${environmentShortcode[environment]}'
-  addressPrefix: subnet.addressPrefix
-}]
+var subnetConfigurationClean = [
+  for subnet in subnetConfiguration: {
+    name: '${service}-${subnet.name}-${regionShortcode[region]}-${environmentShortcode[environment]}'
+    addressPrefix: subnet.addressPrefix
+  }
+]
 
 //INFO: Module References
 module coreNetwork '../main.bicep' = {
-  params: { 
+  params: {
     virtualNetworkName: vnetName
     location: region
     virtualNetworkCIDR: vnetCIDR
@@ -54,4 +56,3 @@ module coreNetwork '../main.bicep' = {
 output virtualNetworkOutput object = coreNetwork.outputs.virtualNetworkOutput
 output subnetOutputs array = coreNetwork.outputs.subnetOutputs
 output nsgOutputs array = coreNetwork.outputs.nsgOutputs
-
