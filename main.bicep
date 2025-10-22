@@ -15,15 +15,14 @@ param subnetValues subnet[]
 param location string
 param tags object
 
-
 //INFO: Module Resources
 // Baseline virtual network resource
 resource virtualNetworkResource 'Microsoft.Network/virtualNetworks@2024-07-01' = {
   name: virtualNetworkName
   location: location
-  properties: { 
-    addressSpace: { 
-      addressPrefixes: [ virtualNetworkCIDR ]
+  properties: {
+    addressSpace: {
+      addressPrefixes: [virtualNetworkCIDR]
     }
   }
 
@@ -31,24 +30,28 @@ resource virtualNetworkResource 'Microsoft.Network/virtualNetworks@2024-07-01' =
 }
 
 // Creates a network security group for each subnet which is created
-resource networkSecurityGroupResource 'Microsoft.Network/networkSecurityGroups@2024-07-01' = [for subnet in subnetValues: { 
-  name: '${subnet.name}-nsg'
-  location: location
+resource networkSecurityGroupResource 'Microsoft.Network/networkSecurityGroups@2024-07-01' = [
+  for subnet in subnetValues: {
+    name: '${subnet.name}-nsg'
+    location: location
 
-  tags: tags
-}]
+    tags: tags
+  }
+]
 
 // Creates each subnet defined in subnetValues, a network security group will be created and attached 
-resource subnetResource 'Microsoft.Network/virtualNetworks/subnets@2024-07-01' = [for (subnet, i) in subnetValues: {
-  parent: virtualNetworkResource
-  name: subnet.name
-  properties: {
-    addressPrefix: subnet.addressPrefix
-    networkSecurityGroup: {
-      id: networkSecurityGroupResource[i].id
+resource subnetResource 'Microsoft.Network/virtualNetworks/subnets@2024-07-01' = [
+  for (subnet, i) in subnetValues: {
+    parent: virtualNetworkResource
+    name: subnet.name
+    properties: {
+      addressPrefix: subnet.addressPrefix
+      networkSecurityGroup: {
+        id: networkSecurityGroupResource[i].id
+      }
     }
   }
-}]
+]
 
 //INFO: Outputs
 output virtualNetworkOutput object = {
@@ -56,12 +59,16 @@ output virtualNetworkOutput object = {
   properties: virtualNetworkResource.properties
 }
 
-output subnetOutputs array = [for (subnet, i) in subnetValues: {
-  name: subnet.name
-  properties: subnetResource[i].properties
-}]
+output subnetOutputs array = [
+  for (subnet, i) in subnetValues: {
+    name: subnet.name
+    properties: subnetResource[i].properties
+  }
+]
 
-output nsgOutputs array =  [for (subnet, i) in subnetValues: {
-  name: networkSecurityGroupResource[i].name
-  properties: networkSecurityGroupResource[i].properties
-}]
+output nsgOutputs array = [
+  for (subnet, i) in subnetValues: {
+    name: networkSecurityGroupResource[i].name
+    properties: networkSecurityGroupResource[i].properties
+  }
+]
