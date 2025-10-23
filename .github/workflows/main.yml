@@ -1,10 +1,24 @@
 name: "Module-CoreNetworking-${{ GITHUB_RUN_ID }}"
-on: [pull_request]
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      location:
+        description: "The location to deploy the test example to."
+        required: true
+        default: 'uksouth'
+        type: choice
+        options:
+          - 'uksouth'
+          - 'ukwest'
+    
 jobs:
   Validate:
     env:
       DeploymentFile: ${{ github.workspace }}/example/example.bicep
-      $ResourceGroupName: rg-mod-corenetwork-${{ GITHUB_RUN_ID }}
+      ResourceGroupName: rg-mod-corenetwork-${{ GITHUB_RUN_ID }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -29,6 +43,16 @@ jobs:
           azcliversion: latest
           inlineScript: |
             az bicep lint --file $DeploymentFile 
+      - name: Create Resource Group
+        uses: azure/cli@2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            if(az group exists --name $ResourceGroupName){
+              Write-Output "Resource Group $ResourceGroupName already exists, skipping creation."
+            }else{
+              az group create --name $ResourceGroupName --location ${{ inputs.location }}
+            }
       - name: Validate
         uses: azure/cli@2
         with: 
