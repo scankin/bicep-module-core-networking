@@ -1,0 +1,41 @@
+name: "Module-CoreNetworking-${{ GITHUB_RUN_ID }}"
+on: [pull_request]
+jobs:
+  Validate:
+    env:
+      DeploymentFile: ${{ github.workspace }}/example/example.bicep
+      $ResourceGroupName: rg-mod-corenetwork-${{ GITHUB_RUN_ID }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+      - name: Install AzCLI
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+      - name: Install Bicep
+        run: | 
+          curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+          chmod +x ./bicep
+          sudo mv ./bicep /usr/local/bin/bicep
+          bicep --help
+      - name: Authenticate
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+      - name: Lint
+        uses: azure/cli@2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az bicep lint --file $DeploymentFile 
+      - name: Validate
+        uses: azure/cli@2
+        with: 
+          azcliversion: latest
+          inlineScript: |
+            az stack group validate --name Module-CoreNetworking-${{ GITHUB_RUN_ID }} `
+              --resource-group $ResourceGroupName `
+              --action-on-unmanage None `
+              --template-file $DeploymentFile
+              --deny-settings-mode None
