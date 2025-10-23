@@ -63,7 +63,7 @@ jobs:
           azcliversion: latest
           inlineScript: |
             az stack group validate --name Module-CoreNetworking-${{ github.run_id }} `
-              --resource-group $ResourceGroupName `
+              --resource-group "$ResourceGroupName" `
               --action-on-unmanage None `
-              --template-file $DeploymentFile
-              --deny-settings-mode None
+              --template-file $DeploymentFile `
+              --deny-settings-mode None `
