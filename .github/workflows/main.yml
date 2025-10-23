@@ -1,4 +1,4 @@
-name: "Module-CoreNetworking-${{ GITHUB_RUN_ID }}"
+name: "Module-CoreNetworking-${{ github.run_id }}"
 on:
   pull_request:
     branches:
