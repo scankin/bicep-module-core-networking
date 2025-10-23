@@ -20,7 +20,7 @@ jobs:
     env:
       DeploymentFile: ${{ github.workspace }}/example/example.bicep
       ResourceGroupName: corenetwork-${{ github.run_id }}
-      DeploymentLocation: ${{.github.event.inputs.location || 'uksouth' }}
+      DeploymentLocation: ${{ github.event.inputs.location || 'uksouth' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
