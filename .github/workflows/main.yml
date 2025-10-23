@@ -64,6 +64,6 @@ jobs:
           inlineScript: |
             az stack group validate --name Module-CoreNetworking-${{ github.run_id }} \
               --resource-group "$ResourceGroupName" \
-              --action-on-unmanage None \
+              --action-on-unmanage detachAll \
               --template-file $DeploymentFile \
               --deny-settings-mode None 
