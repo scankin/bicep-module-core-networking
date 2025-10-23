@@ -67,3 +67,39 @@ jobs:
               --action-on-unmanage detachAll \
               --template-file $DeploymentFile \
               --deny-settings-mode None 
+
+  CleanUp:
+    if: ${{ always() && contains(needs.*.result, 'failure')}}
+    env:
+      DeploymentFile: ${{ github.workspace }}/example/example.bicep
+      ResourceGroupName: corenetwork-${{ github.run_id }}
+      DeploymentLocation: ${{ github.event.inputs.location || 'uksouth' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install AzCLI
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+      - name: Install Bicep
+        run: | 
+          curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+          chmod +x ./bicep
+          sudo mv ./bicep /usr/local/bin/bicep
+          bicep --help
+      - name: Authenticate
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+          auth-type: SERVICE_PRINCIPAL
+      - name: Delete Resource Group
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            echo "Resource Group Name is $ResourceGroupName"
+            if [[az group exists --name "$ResourceGroupName"]]; then
+              echo "Removing Resource Group $ResourceGroupName"
+              az group delete --name "$ResourceGroupName" --yes
+            else
+              echo "Resource Group $ResourceGroupName does not exist, skipping deletion."
+            fi
