@@ -1,9 +1,6 @@
 name: "Module-CoreNetworking-Test"
 run-name: Core Networking Test Deployment ${{ github.run_id }}
 on:
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       location:
@@ -14,6 +11,9 @@ on:
         options:
           - 'uksouth'
           - 'ukwest'
+  pull_request:
+    branches:
+      - main
     
 jobs:
   Validate:
