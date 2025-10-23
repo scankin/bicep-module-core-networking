@@ -45,7 +45,7 @@ jobs:
           inlineScript: |
             az bicep lint --file $DeploymentFile 
       - name: Create Resource Group
-        uses: azure/cli@2
+        uses: azure/cli@v2
         with:
           azcliversion: latest
           inlineScript: |
