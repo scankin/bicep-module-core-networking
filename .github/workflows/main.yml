@@ -50,6 +50,7 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
+            Write-Output "Resource Group Name is $ResourceGroupName"
             if(az group exists --name "$ResourceGroupName"){
               Write-Output "Resource Group $ResourceGroupName already exists, skipping creation."
             }else{
