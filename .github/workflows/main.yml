@@ -39,7 +39,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
       - name: Lint
-        uses: azure/cli@2
+        uses: azure/cli@v2
         with:
           azcliversion: latest
           inlineScript: |
@@ -55,7 +55,7 @@ jobs:
               az group create --name $ResourceGroupName --location ${{ inputs.location }}
             }
       - name: Validate
-        uses: azure/cli@2
+        uses: azure/cli@v2
         with: 
           azcliversion: latest
           inlineScript: |
