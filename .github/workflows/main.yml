@@ -19,7 +19,7 @@ jobs:
   Validate:
     env:
       DeploymentFile: ${{ github.workspace }}/example/example.bicep
-      ResourceGroupName: rg-mod-corenetwork-${{ github.run_id }}
+      ResourceGroupName: corenetwork-${{ github.run_id }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -38,6 +38,7 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
+          auth-type: SERVICE_PRINCIPAL
       - name: Lint
         uses: azure/cli@v2
         with:
@@ -49,10 +50,10 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            if(az group exists --name $ResourceGroupName){
+            if(az group exists --name "$ResourceGroupName"){
               Write-Output "Resource Group $ResourceGroupName already exists, skipping creation."
             }else{
-              az group create --name $ResourceGroupName --location ${{ inputs.location }}
+              az group create --name "$ResourceGroupName" --location ${{ inputs.location }}
             }
       - name: Validate
         uses: azure/cli@v2
