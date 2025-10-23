@@ -19,7 +19,7 @@ jobs:
   Validate:
     env:
       DeploymentFile: ${{ github.workspace }}/example/example.bicep
-      ResourceGroupName: rg-mod-corenetwork-${{ GITHUB_RUN_ID }}
+      ResourceGroupName: rg-mod-corenetwork-${{ github.run_id }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -59,7 +59,7 @@ jobs:
         with: 
           azcliversion: latest
           inlineScript: |
-            az stack group validate --name Module-CoreNetworking-${{ GITHUB_RUN_ID }} `
+            az stack group validate --name Module-CoreNetworking-${{ github.run_id }} `
               --resource-group $ResourceGroupName `
               --action-on-unmanage None `
               --template-file $DeploymentFile
