@@ -20,6 +20,7 @@ jobs:
     env:
       DeploymentFile: ${{ github.workspace }}/example/example.bicep
       ResourceGroupName: corenetwork-${{ github.run_id }}
+      DeploymentLocation: ${{.github.event.inputs.location || 'uksouth' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -54,7 +55,7 @@ jobs:
             if [[az group exists --name "$ResourceGroupName"]]; then
               echo "Resource Group $ResourceGroupName already exists, skipping creation."
             else
-              az group create --name "$ResourceGroupName" --location ${{ inputs.location }}
+              az group create --name "$ResourceGroupName" --location ${{ env.DeploymentLocation }}
             fi
       - name: Validate
         uses: azure/cli@v2
