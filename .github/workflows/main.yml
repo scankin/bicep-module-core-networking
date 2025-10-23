@@ -50,12 +50,12 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            Write-Output "Resource Group Name is $ResourceGroupName"
-            if(az group exists --name "$ResourceGroupName"){
-              Write-Output "Resource Group $ResourceGroupName already exists, skipping creation."
-            }else{
+            echo "Resource Group Name is $ResourceGroupName"
+            if [[az group exists --name "$ResourceGroupName"]]; then
+              echo "Resource Group $ResourceGroupName already exists, skipping creation."
+            else
               az group create --name "$ResourceGroupName" --location ${{ inputs.location }}
-            }
+            fi
       - name: Validate
         uses: azure/cli@v2
         with: 
