@@ -40,6 +40,8 @@ jobs:
       deployment_file: ${{ needs.setup.outputs.deployment_file }}
       resource_group_name: ${{ needs.setup.outputs.resource_group_name }}
       deployment_name: ${{ needs.setup.outputs.deployment_name }}
+    secrets:
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
       
   Deploy:
     needs: [Setup, Validate]
