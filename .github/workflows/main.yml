@@ -34,7 +34,7 @@ jobs:
 
   Validate:
     needs: [Setup]
-    uses: scankin/.github/workflows/bicep-predeploy.yml@main
+    uses: scankin/bicep-workflows/.github/workflows/bicep-predeploy.yml@main
     with: 
       location: ${{ needs.setup.outputs.deployment_location }}
       deployment_file: ${{ needs.setup.outputs.deployment_file }}
@@ -45,7 +45,7 @@ jobs:
       
   Deploy:
     needs: [Setup, Validate]
-    uses: scankin/.github/workflows/bicep/bicep-deploy.yml@main
+    uses: scankin/bicep-workflows/.github/workflows/bicep-predeploy.yml@main
     with:
       location: ${{ needs.setup.outputs.deployment_location }}
       deployment_file: ${{ needs.setup.outputs.deployment_file }}
