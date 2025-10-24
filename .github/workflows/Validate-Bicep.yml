@@ -22,7 +22,18 @@ env:
   DEPLOYMENT_LOCATION: ${{ github.event.inputs.location || 'uksouth' }}
     
 jobs:
+  Setup:
+    runs-on: ubuntu-latest
+    outputs:
+      deployment_file: ${{ env.DEPLOYMENT_FILE }}
+      deployment_name: ${{ env.DEPLOYMENT_NAME }}
+      resource_group_name: ${{ env.RESOURCE_GROUP_NAME }}
+      deployment_location: ${{ env.DEPLOYMENT_LOCATION }}
+    steps:
+      - run: echo "Completed Setup"
+
   Validate:
+    needs: Setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -53,39 +64,39 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            echo "Resource Group Name is $RESOURCE_GROUP_NAME"
-            if [[az group exists --name "$RESOURCE_GROUP_NAME"]]; then
-              echo "Resource Group $RESOURCE_GROUP_NAME already exists, skipping creation."
+            echo "Resource Group Name is ${{ needs.setup.outputs.resource_group_name }}"
+            if [[az group exists --name "${{ needs.setup.outputs.resource_group_name }}"]]; then
+              echo "Resource Group ${{ needs.setup.outputs.resource_group_name }} already exists, skipping creation."
             else
-              az group create --name "$RESOURCE_GROUP_NAME" --location "$DEPLOYMENT_LOCATION"
+              az group create --name "${{ needs.setup.outputs.resource_group_name }}" --location "${{ needs.setup.outputs.deployment_location }}"
             fi
       - name: Validate
         uses: azure/cli@v2
         with: 
           azcliversion: latest
           inlineScript: |
-            az stack group validate --name "$DEPLOYMENT_NAME" \
-              --resource-group "$RESOURCE_GROUP_NAME" \
+            az stack group validate --name "${{ needs.setup.outputs.deployment_name }}" \
+              --resource-group "${{ needs.setup.outputs.resource_group_name }}" \
               --action-on-unmanage detachAll \
-              --template-file $DEPLOYMENT_FILE \
+              --template-file ${{ needs.setup.outputs.deployment_file }} \
               --deny-settings-mode None 
       - name: Plan
         uses: azure/cli@v2
         with:
           azcliversion: latest
           inlineScript: |
-            az deployment group what-if --name "$DEPLOYMENT_NAME" \
-              --resource-group "$RESOURCE_GROUP_NAME" \
-              --template-file $DEPLOYMENT_FILE
+            az deployment group what-if --name "${{ needs.setup.outputs.deployment_name }}" \
+              --resource-group "${{ needs.setup.outputs.resource_group_name }}" \
+              --template-file ${{ needs.setup.outputs.deployment_file }}
       
   Deploy:
-    needs: Validate
+    needs: [Setup, Validate]
     uses: scankin/bicep-module-core-networking/.github/workflows/Deploy-Bicep.yml@feature/pipelines
     with:
-      location: ${{ env.DEPLOYMENT_LOCATION }}
-      deployment_file: ${{ env.DEPLOYMENT_FILE }}
-      resource_group_name: ${{ env.RESOURCE_GROUP_NAME }}
-      deployment_name: ${{ env.DEPLOYMENT_NAME }}
+      location: ${{ needs.setup.outputs.deployment_location }}
+      deployment_file: ${{ needs.setup.outputs.deployment_file }}
+      resource_group_name: ${{ needs.setup.outputs.resource_group_name }}
+      deployment_name: ${{ needs.setup.outputs.deployment_name }}
     secrets:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
