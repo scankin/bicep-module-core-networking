@@ -65,7 +65,7 @@ jobs:
           azcliversion: latest
           inlineScript: |
             echo "Resource Group Name is ${{ needs.setup.outputs.resource_group_name }}"
-            if [[az group exists --name "${{ needs.setup.outputs.resource_group_name }}"]]; then
+            if [ az group exists --name "${{ needs.setup.outputs.resource_group_name }}" ]; then
               echo "Resource Group ${{ needs.setup.outputs.resource_group_name }} already exists, skipping creation."
             else
               az group create --name "${{ needs.setup.outputs.resource_group_name }}" --location "${{ needs.setup.outputs.deployment_location }}"
@@ -129,7 +129,7 @@ jobs:
           azcliversion: latest
           inlineScript: |
             echo "Resource Group Name is $RESOURCE_GROUP_NAME"
-            if [[az group exists --name "$RESOURCE_GROUP_NAME"]]; then
+            if [ az group exists --name "$RESOURCE_GROUP_NAME" ]; then
               echo "Removing Resource Group $RESOURCE_GROUP_NAME"
               az group delete --name "$RESOURCE_GROUP_NAME" --yes
             else
