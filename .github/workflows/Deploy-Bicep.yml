@@ -58,9 +58,9 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            az stack group validate --name "$DeploymentName" \
-              --resource-group "$ResourceGroupName" \
+            az stack group create --name "${{ inputs.deployment_name }}" \
+              --resource-group "${{ inputs.resource_group_name }}" \
               --action-on-unmanage detachAll \
-              --template-file $DeploymentFile \
+              --template-file ${{ inputs.deployment_file }} \
               --deny-settings-mode None 
       
