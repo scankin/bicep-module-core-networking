@@ -45,9 +45,9 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            resource_group_exists=$()
+            resource_group_exists=$(az group exists --name "${{ inputs.resource_group_name }}")
             echo "Resource Group Name is ${{ inputs.resource_group_name }}"
-            if [ az group exists --name "${{ inputs.resource_group_name }}" ]; then
+            if [ $resource_group_exists ]; then
               echo "Resource Group ${{ inputs.resource_group_name }} already exists, continuing"
             else
               echo "Specified Resource Group does not exist, cancelling deployment"
