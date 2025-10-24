@@ -67,7 +67,7 @@ jobs:
             resource_group_exists=$(az group exists --name "${{ inputs.resource_group_name }}")
             echo "Resource Group Name is ${{ needs.setup.outputs.resource_group_name }}"
             echo $resource_group_exists
-            if [ $resource_group_exists ]; then
+            if [ $resource_group_exists=="true" ]; then
               echo "Resource Group ${{ needs.setup.outputs.resource_group_name }} already exists, skipping creation."
             else
               az group create --name "${{ needs.setup.outputs.resource_group_name }}" --location "${{ needs.setup.outputs.deployment_location }}"
