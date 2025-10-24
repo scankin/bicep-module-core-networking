@@ -43,7 +43,7 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            az bicep lint --file $DEPLOYMENT_FILE 
+            az bicep lint --file ${{ inputs.deployment_file }} 
       - name: Create Resource Group
         uses: azure/cli@v2
         with:
