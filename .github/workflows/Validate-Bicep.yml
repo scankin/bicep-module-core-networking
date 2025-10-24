@@ -82,10 +82,10 @@ jobs:
     needs: Validate
     uses: scankin/bicep-module-core-networking/.github/workflows/Deploy-Bicep.yml@feature/pipelines
     with:
-      location: ${{ env.DEPLOYMENT_LOCATION }}
-      deployment_file: ${{ env.DEPLOYMENT_FILE }}
-      resource_group_name: ${{ env.RESOURCE_GROUP_NAME }}
-      deployment_name: ${{ env.DEPLOYMENT_NAME }}
+      location: $DEPLOYMENT_LOCATION
+      deployment_file: $DEPLOYMENT_FILE
+      resource_group_name: $RESOURCE_GROUP_NAME
+      deployment_name: $DEPLOYMENT_NAME
     secrets:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
