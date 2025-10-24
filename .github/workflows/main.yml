@@ -40,7 +40,7 @@ jobs:
               echo "Resource Group ${{ inputs.resource_group_name }} already exists, continuing"
             else
               echo "Creating Resource Group"
-              az group create --name ${{ env.RESOURCE_GROUP_NAME }} --location ${{ env.DEPLOYMENT_LOCATION }}
+              az group create --name ${{ env.RESOURCE_GROUP_NAME }} --location ${{ env.DEPLOYMENT_LOCATION }} --tags pr_id=${{ github.event.number }} pr=true
             fi
       - run: echo "Completed Setup"
 
