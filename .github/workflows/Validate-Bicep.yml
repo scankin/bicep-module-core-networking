@@ -77,13 +77,13 @@ jobs:
               --resource-group "$ResourceGroupName" \
               --template-file $DeploymentFile
       
-      - name: Deploy
-        uses: scankin/bicep-module-core-networking/.github/workflows/Deploy-Bicep.yml@feature/pipelines
-        with:
-          location: $DeploymentLocation
-          deployment_file: $DeploymentFile
-          resource_group_name: $ResourceGroupName
-          deployment_name: $DeploymentName
+  Deploy:
+    uses: scankin/bicep-module-core-networking/.github/workflows/Deploy-Bicep.yml@feature/pipelines
+    with:
+      location: $DeploymentLocation
+      deployment_file: $DeploymentFile
+      resource_group_name: $ResourceGroupName
+      deployment_name: $DeploymentName
 
   CleanUp:
     if: ${{ always() && contains(needs.*.result, 'failure')}}
