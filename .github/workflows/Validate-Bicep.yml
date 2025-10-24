@@ -14,14 +14,15 @@ on:
   pull_request:
     branches:
       - main
+
+env:
+  DEPLOYMENT_FILE: ${{ github.workspace }}/example/example.bicep
+  DEPLOYMENT_NAME: Module-CoreNetworking-${{ github.run_id }}
+  RESOURCE_GROUP_NAME: corenetwork-${{ github.run_id }}
+  DEPLOYMENT_LOCATION: ${{ github.event.inputs.location || 'uksouth' }}
     
 jobs:
   Validate:
-    env:
-      DeploymentFile: ${{ github.workspace }}/example/example.bicep
-      DeploymentName: Module-CoreNetworking-${{ github.run_id }}
-      ResourceGroupName: corenetwork-${{ github.run_id }}
-      DeploymentLocation: ${{ github.event.inputs.location || 'uksouth' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -46,45 +47,45 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            az bicep lint --file $DeploymentFile 
+            az bicep lint --file $DEPLOYMENT_FILE 
       - name: Create Resource Group
         uses: azure/cli@v2
         with:
           azcliversion: latest
           inlineScript: |
-            echo "Resource Group Name is $ResourceGroupName"
-            if [[az group exists --name "$ResourceGroupName"]]; then
-              echo "Resource Group $ResourceGroupName already exists, skipping creation."
+            echo "Resource Group Name is $RESOURCE_GROUP_NAME"
+            if [[az group exists --name "$RESOURCE_GROUP_NAME"]]; then
+              echo "Resource Group $RESOURCE_GROUP_NAME already exists, skipping creation."
             else
-              az group create --name "$ResourceGroupName" --location ${{ env.DeploymentLocation }}
+              az group create --name "$RESOURCE_GROUP_NAME" --location "$DEPLOYMENT_LOCATION"
             fi
       - name: Validate
         uses: azure/cli@v2
         with: 
           azcliversion: latest
           inlineScript: |
-            az stack group validate --name "$DeploymentName" \
-              --resource-group "$ResourceGroupName" \
+            az stack group validate --name "$DEPLOYMENT_NAME" \
+              --resource-group "$RESOURCE_GROUP_NAME" \
               --action-on-unmanage detachAll \
-              --template-file $DeploymentFile \
+              --template-file $DEPLOYMENT_FILE \
               --deny-settings-mode None 
       - name: Plan
         uses: azure/cli@v2
         with:
           azcliversion: latest
           inlineScript: |
-            az deployment group what-if --name "$DeploymentName" \
-              --resource-group "$ResourceGroupName" \
-              --template-file $DeploymentFile
+            az deployment group what-if --name "$DEPLOYMENT_NAME" \
+              --resource-group "$RESOURCE_GROUP_NAME" \
+              --template-file $DEPLOYMENT_FILE
       
   Deploy:
     needs: Validate
     uses: scankin/bicep-module-core-networking/.github/workflows/Deploy-Bicep.yml@feature/pipelines
     with:
-      location: $DeploymentLocation
-      deployment_file: $DeploymentFile
-      resource_group_name: $ResourceGroupName
-      deployment_name: $DeploymentName
+      location: $DEPLOYMENT_LOCATION
+      deployment_file: $DEPLOYMENT_FILE
+      resource_group_name: $RESOURCE_GROUP_NAME
+      deployment_name: $DEPLOYMENT_NAME
 
   CleanUp:
     if: ${{ always() && contains(needs.*.result, 'failure')}}
@@ -114,10 +115,10 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            echo "Resource Group Name is $ResourceGroupName"
-            if [[az group exists --name "$ResourceGroupName"]]; then
-              echo "Removing Resource Group $ResourceGroupName"
-              az group delete --name "$ResourceGroupName" --yes
+            echo "Resource Group Name is $RESOURCE_GROUP_NAME"
+            if [[az group exists --name "$RESOURCE_GROUP_NAME"]]; then
+              echo "Removing Resource Group $RESOURCE_GROUP_NAME"
+              az group delete --name "$RESOURCE_GROUP_NAME" --yes
             else
-              echo "Resource Group $ResourceGroupName does not exist, skipping deletion."
+              echo "Resource Group $RESOURCE_GROUP_NAME does not exist, skipping deletion."
             fi
