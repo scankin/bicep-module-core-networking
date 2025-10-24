@@ -19,6 +19,7 @@ jobs:
   Validate:
     env:
       DeploymentFile: ${{ github.workspace }}/example/example.bicep
+      DeploymentName: Module-CoreNetworking-${{ github.run_id }}
       ResourceGroupName: corenetwork-${{ github.run_id }}
       DeploymentLocation: ${{ github.event.inputs.location || 'uksouth' }}
     runs-on: ubuntu-latest
@@ -62,11 +63,20 @@ jobs:
         with: 
           azcliversion: latest
           inlineScript: |
-            az stack group validate --name Module-CoreNetworking-${{ github.run_id }} \
+            az stack group validate --name "$DeploymentName" \
               --resource-group "$ResourceGroupName" \
               --action-on-unmanage detachAll \
               --template-file $DeploymentFile \
               --deny-settings-mode None 
+      - name: Plan
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az deployment group what-if --name "$DeploymentName" \
+              --resource-group "$ResourceGroupName" \
+              --template-file $DeploymentFile
+
 
   CleanUp:
     if: ${{ always() && contains(needs.*.result, 'failure')}}
