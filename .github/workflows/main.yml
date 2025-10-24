@@ -17,7 +17,7 @@ on:
 
 env:
   DEPLOYMENT_FILE: ${{ github.workspace }}/example/example.bicep
-  DEPLOYMENT_NAME: Module-CoreNetworking-${{ github.event.number }}
+  DEPLOYMENT_NAME: Module-CoreNetworking
   RESOURCE_GROUP_NAME: corenetwork-${{ github.event.number }}
   DEPLOYMENT_LOCATION: ${{ github.event.inputs.location || 'uksouth' }}
     
@@ -30,12 +30,19 @@ jobs:
       resource_group_name: ${{ env.RESOURCE_GROUP_NAME }}
       deployment_location: ${{ env.DEPLOYMENT_LOCATION }}
     steps:
-      - run: echo "Completed Setup"
       - name: Create Resource Group
         uses: azure/cli@v2
         with:
           inlineScript: |
-            az group create --name ${{ env.RESOURCE_GROUP_NAME }} --location ${{ env.DEPLOYMENT_LOCATION }
+            resource_group_exists=$(az group exists --name "${{ inputs.resource_group_name }}")
+            echo "Resource Group Name is ${{ inputs.resource_group_name }}"
+            if [[ $resource_group_exists == "true" ]]; then
+              echo "Resource Group ${{ inputs.resource_group_name }} already exists, continuing"
+            else
+              echo "Creating Resource Group"
+              az group create --name ${{ env.RESOURCE_GROUP_NAME }} --location ${{ env.DEPLOYMENT_LOCATION }}
+            fi
+      - run: echo "Completed Setup"
 
   Validate:
     needs: [Setup]
