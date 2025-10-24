@@ -78,6 +78,7 @@ jobs:
               --template-file $DeploymentFile
       
   Deploy:
+    needs: Validate
     uses: scankin/bicep-module-core-networking/.github/workflows/Deploy-Bicep.yml@feature/pipelines
     with:
       location: $DeploymentLocation

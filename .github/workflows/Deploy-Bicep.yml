@@ -50,7 +50,7 @@ jobs:
               exit 1
             fi
       - name: Deploy Bicep
-        uses: azure/cli@2
+        uses: azure/cli@v2
         with:
           azcliversion: latest
           inlineScript: |
