@@ -86,6 +86,8 @@ jobs:
       deployment_file: $DEPLOYMENT_FILE
       resource_group_name: $RESOURCE_GROUP_NAME
       deployment_name: $DEPLOYMENT_NAME
+    secrets:
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
   CleanUp:
     if: ${{ always() && contains(needs.*.result, 'failure')}}

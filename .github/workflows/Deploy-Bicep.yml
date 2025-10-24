@@ -15,6 +15,9 @@ on:
       deployment_name:
         required: true
         type: string
+    secrets:
+      AZURE_CREDENTIALS:
+        required: true
     
 jobs:
   Deploy:
