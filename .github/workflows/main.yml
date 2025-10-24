@@ -1,0 +1,89 @@
+name: "Module-CoreNetworking-Test"
+run-name: Core Networking Test Deployment ${{ github.run_id }}
+on:
+  workflow_dispatch:
+    inputs:
+      location:
+        description: "The location to deploy the test example to."
+        required: true
+        default: 'uksouth'
+        type: choice
+        options:
+          - 'uksouth'
+          - 'ukwest'
+  pull_request:
+    branches:
+      - main
+
+env:
+  DEPLOYMENT_FILE: ${{ github.workspace }}/example/example.bicep
+  DEPLOYMENT_NAME: Module-CoreNetworking-${{ github.run_id }}
+  RESOURCE_GROUP_NAME: corenetwork-${{ github.run_id }}
+  DEPLOYMENT_LOCATION: ${{ github.event.inputs.location || 'uksouth' }}
+    
+jobs:
+  Setup:
+    runs-on: ubuntu-latest
+    outputs:
+      deployment_file: ${{ env.DEPLOYMENT_FILE }}
+      deployment_name: ${{ env.DEPLOYMENT_NAME }}
+      resource_group_name: ${{ env.RESOURCE_GROUP_NAME }}
+      deployment_location: ${{ env.DEPLOYMENT_LOCATION }}
+    steps:
+      - run: echo "Completed Setup"
+
+  Validate:
+    needs: [Setup]
+    uses: scankin/bicep-module-core-networking/.github/workflows/Validate-Bicep.yml@feature/pipelines
+    with: 
+      location: ${{ needs.setup.outputs.deployment_location }}
+      deployment_file: ${{ needs.setup.outputs.deployment_file }}
+      resource_group_name: ${{ needs.setup.outputs.resource_group_name }}
+      deployment_name: ${{ needs.setup.outputs.deployment_name }}
+      
+  Deploy:
+    needs: [Setup, Validate]
+    uses: scankin/bicep-module-core-networking/.github/workflows/Deploy-Bicep.yml@feature/pipelines
+    with:
+      location: ${{ needs.setup.outputs.deployment_location }}
+      deployment_file: ${{ needs.setup.outputs.deployment_file }}
+      resource_group_name: ${{ needs.setup.outputs.resource_group_name }}
+      deployment_name: ${{ needs.setup.outputs.deployment_name }}
+    secrets:
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+
+  CleanUp:
+    if: ${{ always() && contains(needs.*.result, 'failure')}}
+    env:
+      DeploymentFile: ${{ github.workspace }}/example/example.bicep
+      ResourceGroupName: corenetwork-${{ github.run_id }}
+      DeploymentLocation: ${{ github.event.inputs.location || 'uksouth' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install AzCLI
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+      - name: Install Bicep
+        run: | 
+          curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+          chmod +x ./bicep
+          sudo mv ./bicep /usr/local/bin/bicep
+          bicep --help
+      - name: Authenticate
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+          auth-type: SERVICE_PRINCIPAL
+      - name: Delete Resource Group
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            echo "Resource Group Name is $RESOURCE_GROUP_NAME"
+            if [ az group exists --name "$RESOURCE_GROUP_NAME" ]; then
+              echo "Removing Resource Group $RESOURCE_GROUP_NAME"
+              az group delete --name "$RESOURCE_GROUP_NAME" --yes
+            else
+              echo "Resource Group $RESOURCE_GROUP_NAME does not exist, skipping deletion."
+            fi
