@@ -66,6 +66,7 @@ jobs:
           inlineScript: |
             resource_group_exists=$(az group exists --name "${{ inputs.resource_group_name }}")
             echo "Resource Group Name is ${{ needs.setup.outputs.resource_group_name }}"
+            echo $resource_group_exists
             if [ $resource_group_exists ]; then
               echo "Resource Group ${{ needs.setup.outputs.resource_group_name }} already exists, skipping creation."
             else
